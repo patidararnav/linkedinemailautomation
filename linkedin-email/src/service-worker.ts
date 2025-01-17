@@ -25,6 +25,7 @@ type ProfileInformation = {
 const getInfo = async (tab: chrome.tabs.Tab): Promise<ProfileInformation | null> => {
     const name = document.querySelector('h1')?.textContent ?? null;
     let email = null;
+    let email_status = null;
     const headline = document.getElementsByClassName('text-body-medium break-words')[0]?.textContent?.trim() ?? null;
     const location = document.getElementsByClassName('text-body-small inline t-black--light break-words')[0]?.textContent?.trim() ?? null;
     const bio = document.querySelector('.LDmeLHPrHxuoxVCdCoUvcPxxJtBGbmbYt span[aria-hidden="true"]')?.textContent?.trim() ?? null;
@@ -55,6 +56,7 @@ const getInfo = async (tab: chrome.tabs.Tab): Promise<ProfileInformation | null>
             console.log(data);
             if (data.person.email) {
                 email = data.person.email;
+                email_status = data.person.email_status;
             } else {
                 console.error(`No verified email found for ${name}`);
             }
@@ -92,6 +94,7 @@ const getInfo = async (tab: chrome.tabs.Tab): Promise<ProfileInformation | null>
     const res = {
         name: name,
         email: email,
+        email_status: email_status,
         headline: headline,
         location: location,
         bio: bio,
