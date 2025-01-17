@@ -33,7 +33,7 @@ const getInfo = async (tab: chrome.tabs.Tab): Promise<ProfileInformation | null>
         const body = JSON.stringify({
             api_key: 'GYJMiiOZW_ahUWXOKipS7g',
             name: name,
-            linkedin_url: tab.url,
+            linkedin_url: tab.url, // this might be problem
         })
     
         const options = {
@@ -53,7 +53,7 @@ const getInfo = async (tab: chrome.tabs.Tab): Promise<ProfileInformation | null>
             }
             const data = await res.json();
             console.log(data);
-            if (data.person.email && data.person.email_status == 'verified') {
+            if (data.person.email) {
                 email = data.person.email;
             } else {
                 console.error(`No verified email found for ${name}`);
