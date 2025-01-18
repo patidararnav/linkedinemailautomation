@@ -23,7 +23,7 @@ const Popup: React.FC = () => {
         
         try {
             console.log("Sending message to service worker...");
-            const response = await chrome.runtime.sendMessage({ action: "GET_EMAIL" });
+            const response = await chrome.runtime.sendMessage({ action: "FETCH_METADATA" });
             console.log("Received response:", response);
             
             if (response && response.email) {
