@@ -1,12 +1,20 @@
 import React, { useState } from 'react';
 import './Popup.css';
 
+type Experience = {
+    role: string;
+    company: string;
+    duration: string;
+    description: string | null;
+}
+
 type ProfileState = {
     name: string | null;
     headline: string | null;
     email: string | null;
     company: string | null;
     isEmailVerified: boolean;
+    experiences: Experience[];
 }
 
 const Popup: React.FC = () => {
@@ -27,23 +35,22 @@ const Popup: React.FC = () => {
             console.log("Received response:", response);
             
             if (response && response.email) {
-                console.log("Email status:", response.email_status);
-                
                 const isVerified = response.email_status === "verified";
-                console.log("Is email verified?", isVerified);
                 
                 setProfileData({
                     name: response.name,
                     headline: response.headline,
                     email: response.email,
                     company: response.experiences?.[0]?.company || null,
-                    isEmailVerified: isVerified
+                    isEmailVerified: isVerified,
+                    experiences: response.experiences || []
                 });
             } else {
-                setError("Couldn't fetch profile information.");
+                throw new Error("Could not find an email for this profile. Please try another profile.");
             }
         } catch (err) {
-            setError("An error occurred while fetching the data.");
+            setError(err instanceof Error ? err.message : "An error occurred while fetching the data.");
+            setProfileData(null);
         } finally {
             setIsLoading(false);
         }
@@ -74,12 +81,18 @@ const Popup: React.FC = () => {
             {email intro} {...email body...}
             Thanks,
             {your name}
+
             Here is some more context:
-            
-Original message: "${message}"
 
-Context: This is a LinkedIn connection reaching out to ${profileData?.name}, who is ${profileData?.headline} at ${profileData?.company}.`;
+            Original message: "${message}"
 
+            Context: This is a LinkedIn connection reaching out to ${profileData?.name}, who is ${profileData?.headline} at ${profileData?.company}.
+
+            Their recent experience includes:
+            ${profileData?.experiences.map(exp => 
+                `• ${exp.role} at ${exp.company} (${exp.duration})${exp.description ? `: ${exp.description}` : ''}`
+            ).join('\n')}`;
+            console.log("Prompt:", prompt);
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
                 headers: {
@@ -101,6 +114,7 @@ Context: This is a LinkedIn connection reaching out to ${profileData?.name}, who
             }
 
             const data = await response.json();
+            console.log("Revised message:", data);
             const revisedMessage = data.choices[0].message.content.trim();
             setMessage(revisedMessage);
         } catch (err) {
@@ -126,6 +140,11 @@ Context: This is a LinkedIn connection reaching out to ${profileData?.name}, who
                 <button onClick={fetchEmail} className="get-email-button">
                     Get Email
                 </button>
+                {error && (
+                    <div className="fetch-error">
+                        {error}
+                    </div>
+                )}
             </div>
         );
     }

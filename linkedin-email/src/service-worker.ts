@@ -1,7 +1,7 @@
 type Experience = {
-    role: string | null;
-    company: string | null;
-    duration: string | null;
+    role: string;
+    company: string;
+    duration: string;
     description: string | null;
 }
 
@@ -29,10 +29,50 @@ const getInfo = async (tab: chrome.tabs.Tab): Promise<ProfileInformation | null>
     const headline = document.getElementsByClassName('text-body-medium break-words')[0]?.textContent?.trim() ?? null;
     const location = document.getElementsByClassName('text-body-small inline t-black--light break-words')[0]?.textContent?.trim() ?? null;
     const bio = document.querySelector('.LDmeLHPrHxuoxVCdCoUvcPxxJtBGbmbYt span[aria-hidden="true"]')?.textContent?.trim() ?? null;
-    
+
+
+    const experiences = Array.from(document.querySelectorAll('.artdeco-list__item'))
+        .map(item => {
+            let role = item.querySelector('.mr1.t-bold span[aria-hidden="true"]')?.textContent?.trim();
+            if (!role) {
+                role = item.querySelector('.mr1.t-bold span[aria-hidden="false"]')?.textContent?.trim();
+            }
+            
+            let company = item.querySelector('.t-14.t-normal span[aria-hidden="true"]')?.textContent?.trim();
+            if (!company) {
+                company = item.querySelector('.t-14.t-normal span[aria-hidden="false"]')?.textContent?.trim();
+            }
+            
+            let duration = item.querySelector('.t-black--light span[aria-hidden="true"]')?.textContent?.trim();
+            if (!duration) {
+                duration = item.querySelector('.t-black--light span[aria-hidden="false"]')?.textContent?.trim();
+            }
+            
+            let description = item.querySelector('.inline-show-more-text--is-collapsed span[aria-hidden="true"]')?.textContent?.trim();
+            if (!description) {
+                description = item.querySelector('.inline-show-more-text--is-expanded span[aria-hidden="true"]')?.textContent?.trim();
+            }
+            if (!description) {
+                description = item.querySelector('.full-width.t-14.t-normal.t-black span[aria-hidden="true"]')?.textContent?.trim();
+            }
+            
+            if (!role || !company) return null;
+            
+            return {
+                role: role.split('·')[0] || '',
+                company: company.split('·')[0] || '',
+                duration: duration || '',
+                description: description || null
+            };
+        })
+        .filter((exp): exp is Experience => exp !== null)
+        .slice(0, 3);
+
+    console.log('Scraped experiences:', experiences);
+
     if (name) {
         const body = JSON.stringify({
-            api_key: 'GYJMiiOZW_ahUWXOKipS7g',
+            api_key: 'pn6VPTp_gHi-CcTboM07Hw',
             name: name,
             linkedin_url: tab.url, // this might be problem
         })
@@ -50,47 +90,21 @@ const getInfo = async (tab: chrome.tabs.Tab): Promise<ProfileInformation | null>
         try {
             const res = await fetch('https://api.apollo.io/api/v1/people/match?reveal_personal_emails=true&reveal_phone_number=false', options);
             if (!res.ok) {
-                throw new Error(`Error: ${res.status}: ${res.statusText}`);
+                throw new Error(`Apollo API error: ${res.status}: ${res.statusText}`);
             }
             const data = await res.json();
             console.log(data);
-            if (data.person.email) {
+            if (data.person?.email) {
                 email = data.person.email;
                 email_status = data.person.email_status;
             } else {
-                console.error(`No verified email found for ${name}`);
+                console.error(`No email found for ${name}. Please try another profile.`);
             }
         } catch (error) {
             console.error('Error fetching email:', error);
         }
     }
 
-    const experienceSection = Array.from(document.querySelectorAll('section'))
-        .find((section) => section.textContent?.includes("Experience"));
-    if (!experienceSection) {
-        console.warn('Experience section not found.');
-        return null;
-    }
-    const experienceItems = Array.from(experienceSection.querySelectorAll('li'));
-    const experiences = Array.from(experienceItems).map((item) => {
-        const exp: Experience = {
-            role: null,
-            company: null,
-            duration: null,
-            description: null,
-        }
-        const spans = item.querySelectorAll('span[aria-hidden="true"]');
-        spans.forEach((span, index) => {
-            const textContent = span.textContent?.trim() ?? null;
-            if (index == 0) exp.role = textContent;
-            else if (index == 1) exp.company = textContent;
-            else if (index == 2) exp.duration = textContent;
-            else if (index == 3) exp.description = textContent;
-        })
-        return exp;
-    })
-    console.log(`Email is: ${email}.`);
-    
     const res = {
         name: name,
         email: email,
