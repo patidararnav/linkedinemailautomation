@@ -23,5 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 
-# Env files
-./src/env
+# Env file ignore patterns
+.env
+*.env
+!.env.example
