@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
+    "types": ["vite/client", "@types/chrome"],
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    "incremental": true,
     "target": "ES2022",
     "lib": ["ES2023"],
     "module": "ESNext",
@@ -17,8 +19,7 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noFallthroughCasesInSwitch": true
   },
   "include": ["vite.config.ts"]
 }

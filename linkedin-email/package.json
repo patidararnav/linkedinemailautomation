@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-      "build": "tsc -p tsconfig.service-worker.json && vite build",
-      "dev": "vite",
-      "type-check": "tsc --noEmit"
+    "build": "tsc -p tsconfig.service-worker.json && vite build",
+    "dev": "vite",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "react": "^18.3.1",
